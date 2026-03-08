@@ -1,0 +1,23 @@
+﻿
+> frontend@0.1.0 build
+> next build
+
+   Γû▓ Next.js 15.2.0
+
+   Creating an optimized production build ...
+ Γ£ô Compiled successfully
+   Linting and checking validity of types ...
+node.exe :  Γ¿» ESLint: Cannot find module 
+'D:\AssignMind\frontend\node_modules\eslint-config-next\core-web-vitals' imported from 
+D:\AssignMind\frontend\eslint.config.mjs Did you mean to import "eslint-config-next/core-web-vitals.js"?
+At C:\Program Files\nodejs\npm.ps1:29 char:3
++   & $NODE_EXE $NPM_CLI_JS $args
++   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ( Γ¿» ESLint: Ca...web-vitals.js"?:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+   Collecting page data ...
+
+> Build error occurred
+[Error: Page "/workspaces/[workspaceId]" is missing "generateStaticParams()" so it cannot be used with 
+"output: export" config.]

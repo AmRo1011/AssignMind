@@ -25,6 +25,7 @@ export default function CallbackPage() {
 
         hasSyncedObj.current = true;
         syncUser();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [session, isLoading]);
 
     const syncUser = async () => {

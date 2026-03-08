@@ -1,0 +1,11 @@
+/workspaces/*/assignment/ /workspaces/[workspaceId]/assignment/index.html 200
+/workspaces/*/board/ /workspaces/[workspaceId]/board/index.html 200
+/workspaces/*/chat/ /workspaces/[workspaceId]/chat/index.html 200
+/workspaces/*/distribute/ /workspaces/[workspaceId]/distribute/index.html 200
+/workspaces/*/ /workspaces/[workspaceId]/index.html 200
+
+/workspaces/*/assignment /workspaces/[workspaceId]/assignment/index.html 200
+/workspaces/*/board /workspaces/[workspaceId]/board/index.html 200
+/workspaces/*/chat /workspaces/[workspaceId]/chat/index.html 200
+/workspaces/*/distribute /workspaces/[workspaceId]/distribute/index.html 200
+/workspaces/* /workspaces/[workspaceId]/index.html 200

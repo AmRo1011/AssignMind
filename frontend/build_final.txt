@@ -1,0 +1,97 @@
+﻿
+> frontend@0.1.0 build
+> next build
+
+   Γû▓ Next.js 15.2.0
+
+   Creating an optimized production build ...
+ Γ£ô Compiled successfully
+   Linting and checking validity of types ...
+node.exe : 
+At C:\Program Files\nodejs\npm.ps1:29 char:3
++   & $NODE_EXE $NPM_CLI_JS $args
++   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+Failed to compile.
+
+./src/app/(auth)/callback/page.tsx
+28:8  Warning: React Hook useEffect has a missing dependency: 'syncUser'. Either include it or remove the 
+dependency array.  react-hooks/exhaustive-deps
+41:52  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+50:18  Error: 'error' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/app/(auth)/login/page.tsx
+12:16  Error: 'CardHeader' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/app/(dashboard)/CreateWorkspaceModal.tsx
+32:23  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/app/(dashboard)/credits/page.tsx
+31:23  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+44:23  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/app/(dashboard)/page.tsx
+21:71  Warning: React Hook useEffect has a missing dependency: 'fetchWorkspaces'. Either include it or remove 
+the dependency array.  react-hooks/exhaustive-deps
+
+./src/app/(dashboard)/PendingInvitations.tsx
+14:41  Warning: React Hook useEffect has a missing dependency: 'loadInvites'. Either include it or remove the 
+dependency array.  react-hooks/exhaustive-deps
+
+./src/app/(dashboard)/settings/ProfileAvatar.tsx
+4:10  Error: 'Badge' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/app/(dashboard)/workspaces/[workspaceId]/assignment/AssignmentUpload.tsx
+25:23  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/app/(dashboard)/workspaces/[workspaceId]/assignment/ClientPage.tsx
+10:10  Error: 'Button' is defined but never used.  @typescript-eslint/no-unused-vars
+24:8  Warning: React Hook useEffect has a missing dependency: 'fetchLatest'. Either include it or remove the 
+dependency array.  react-hooks/exhaustive-deps
+30:23  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/app/(dashboard)/workspaces/[workspaceId]/board/ClientPage.tsx
+42:23  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+50:39  Warning: React Hook useEffect has a missing dependency: 'loadBoard'. Either include it or remove the 
+dependency array.  react-hooks/exhaustive-deps
+81:23  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/app/(dashboard)/workspaces/[workspaceId]/chat/ClientPage.tsx
+41:23  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+55:18  Error: 'err' is defined but never used.  @typescript-eslint/no-unused-vars
+55:23  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+65:8  Warning: React Hook useEffect has a missing dependency: 'loadInitialData'. Either include it or remove 
+the dependency array.  react-hooks/exhaustive-deps
+84:8  Warning: React Hook useEffect has a missing dependency: 'startPolling'. Either include it or remove the 
+dependency array.  react-hooks/exhaustive-deps
+119:23  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/app/(dashboard)/workspaces/[workspaceId]/ClientPage.tsx
+4:8  Error: 'Link' is defined but never used.  @typescript-eslint/no-unused-vars
+26:11  Error: 'leaderName' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./src/app/(dashboard)/workspaces/[workspaceId]/distribute/ClientPage.tsx
+9:10  Error: 'Input' is defined but never used.  @typescript-eslint/no-unused-vars
+47:8  Warning: React Hook useEffect has a missing dependency: 'addToast'. Either include it or remove the 
+dependency array.  react-hooks/exhaustive-deps
+78:23  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+90:23  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+96:70  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+99:27  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/app/(dashboard)/workspaces/[workspaceId]/InviteMemberModal.tsx
+17:54  Warning: React Hook useEffect has a missing dependency: 'fetchInvites'. Either include it or remove the 
+dependency array.  react-hooks/exhaustive-deps
+32:23  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/app/(dashboard)/workspaces/[workspaceId]/WorkspaceSettingsModal.tsx
+30:23  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+41:23  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/app/error.tsx
+12:33  Error: 'error' is defined but never used.  @typescript-eslint/no-unused-vars
+
+info  - Need to disable some ESLint rules? Learn more here: 
+https://nextjs.org/docs/app/api-reference/config/eslint#disabling-rules

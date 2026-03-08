@@ -1,0 +1,26 @@
+﻿
+> frontend@0.1.0 build
+> next build
+
+   Γû▓ Next.js 15.2.0
+
+   Creating an optimized production build ...
+ Γ£ô Compiled successfully
+   Skipping validation of types
+   Skipping linting
+   Collecting page data ...
+   Generating static pages (0/16) ...
+node.exe : Error occurred prerendering page "/workspaces/[workspaceId]/board". Read more: 
+https://nextjs.org/docs/messages/prerender-error
+At C:\Program Files\nodejs\npm.ps1:29 char:3
++   & $NODE_EXE $NPM_CLI_JS $args
++   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Error occurred ...prerender-error:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+Error: Route /workspaces/[workspaceId]/board with `dynamic = "error"` couldn't be rendered statically because 
+it used `await searchParams`, `searchParams.then`, or similar. See more info here: 
+https://nextjs.org/docs/app/building-your-application/rendering/static-and-dynamic#dynamic-rendering
+Export encountered an error on /(dashboard)/workspaces/[workspaceId]/board/page: 
+/workspaces/[workspaceId]/board, exiting the build.
+ Γ¿» Next.js build worker exited with code: 1 and signal: null
