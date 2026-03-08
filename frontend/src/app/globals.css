@@ -1,0 +1,155 @@
+@import "tailwindcss";
+
+/* ─── AssignMind Design System ─── */
+
+:root {
+  /* Core palette */
+  --am-primary: #6366f1;
+  /* Indigo 500 */
+  --am-primary-light: #818cf8;
+  /* Indigo 400 */
+  --am-primary-dark: #4f46e5;
+  /* Indigo 600 */
+  --am-secondary: #06b6d4;
+  /* Cyan 500 */
+  --am-accent: #f59e0b;
+  /* Amber 500 */
+
+  /* Semantic */
+  --am-success: #22c55e;
+  /* Green 500 */
+  --am-warning: #f59e0b;
+  /* Amber 500 */
+  --am-error: #ef4444;
+  /* Red 500 */
+  --am-info: #3b82f6;
+  /* Blue 500 */
+
+  /* Light mode surfaces */
+  --background: #fafbff;
+  --foreground: #0f172a;
+  --surface: #ffffff;
+  --surface-hover: #f1f5f9;
+  --border: #e2e8f0;
+  --muted: #64748b;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0b0f1a;
+    --foreground: #f1f5f9;
+    --surface: #1e293b;
+    --surface-hover: #334155;
+    --border: #334155;
+    --muted: #94a3b8;
+  }
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-surface-hover: var(--surface-hover);
+  --color-border: var(--border);
+  --color-muted: var(--muted);
+
+  --color-primary: var(--am-primary);
+  --color-primary-light: var(--am-primary-light);
+  --color-primary-dark: var(--am-primary-dark);
+  --color-secondary: var(--am-secondary);
+  --color-accent: var(--am-accent);
+
+  --color-success: var(--am-success);
+  --color-warning: var(--am-warning);
+  --color-error: var(--am-error);
+  --color-info: var(--am-info);
+
+  --font-sans: var(--font-inter);
+  --font-heading: var(--font-outfit);
+  --font-mono: var(--font-geist-mono);
+}
+
+/* ─── Base Styles ─── */
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans, "Inter", system-ui, sans-serif);
+}
+
+/* ─── Smooth transitions ─── */
+
+* {
+  transition-property: color, background-color, border-color, box-shadow;
+  transition-duration: 150ms;
+  transition-timing-function: ease-in-out;
+}
+
+/* Disable transition on page load */
+.preload * {
+  transition: none !important;
+}
+
+/* ─── Focus ring (accessibility) ─── */
+
+*:focus-visible {
+  outline: 2px solid var(--am-primary);
+  outline-offset: 2px;
+}
+
+/* ─── Scrollbar (dark theme) ─── */
+
+@media (prefers-color-scheme: dark) {
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: var(--surface);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--muted);
+  }
+}
+
+/* ─── Selection highlight ─── */
+
+::selection {
+  background-color: var(--am-primary);
+  color: white;
+}
+
+/* ─── Toast slide-in animation ─── */
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* ─── Modal scale-in animation ─── */
+
+@keyframes scaleIn {
+  from {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}

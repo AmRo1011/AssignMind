@@ -1,0 +1,38 @@
+﻿
+> frontend@0.1.0 build
+> next build
+
+Γû▓ Next.js 16.1.6 (Turbopack)
+
+  Creating an optimized production build ...
+Γ£ô Compiled successfully in 5.2s
+  Running TypeScript ...
+  Collecting page data using 15 workers ...
+  Generating static pages using 15 workers (0/10) ...
+  Generating static pages using 15 workers (2/10) 
+  Generating static pages using 15 workers (4/10) 
+  Generating static pages using 15 workers (7/10) 
+Γ£ô Generating static pages using 15 workers (10/10) in 820.4ms
+  Finalizing page optimization ...
+
+Route (app)
+Γöî Γùï /
+Γö£ Γùï /_not-found
+Γö£ Γùï /callback
+Γö£ Γùï /credits
+Γö£ Γùï /login
+Γö£ Γùï /reactivate
+Γö£ Γùï /settings
+Γö£ Γùï /verify-phone
+Γö£ ╞Æ /workspaces/[workspaceId]
+Γö£ ╞Æ /workspaces/[workspaceId]/assignment
+Γö£ ╞Æ /workspaces/[workspaceId]/board
+Γö£ ╞Æ /workspaces/[workspaceId]/chat
+Γöö ╞Æ /workspaces/[workspaceId]/distribute
+
+
+╞Æ Proxy (Middleware)
+
+Γùï  (Static)   prerendered as static content
+╞Æ  (Dynamic)  server-rendered on demand
+
