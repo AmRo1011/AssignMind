@@ -1,7 +1,7 @@
 """
 AssignMind — AI Service Layer
 
-Core engine mediating all Anthropic Claude API calls.
+Core engine mediating all OpenRouter API calls.
 Enforces Guided Learning (Constitution §I), Credit accounting (§IV),
 and Language detection.
 """
@@ -10,7 +10,7 @@ import json
 from uuid import UUID
 from typing import Any
 
-from anthropic import AsyncAnthropic
+from openai import AsyncOpenAI
 import langdetect
 import structlog
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -34,7 +34,11 @@ class AIServiceError(Exception):
 
 class AIService:
     def __init__(self, api_key: str):
-        self.client = AsyncAnthropic(api_key=api_key)
+        self.client = AsyncOpenAI(
+            base_url="https://openrouter.ai/api/v1",
+            api_key=api_key
+        )
+        self.model = "anthropic/claude-3-haiku"
 
     def _detect_language(self, text: str) -> str:
         """Detect language, defaulting to 'en'."""
@@ -60,18 +64,22 @@ class AIService:
     async def _call_claude(
         self, system_prompt: str, user_content: str, is_retry: bool = False
     ) -> str:
-        """Invoke Claude, validate against violations, optionally retry."""
+        """Invoke Claude via OpenRouter, validate against violations, optionally retry."""
         if is_retry:
-            user_content += f"\n\nERROR: Do not provide a direct answer. Follow guided learning constraints strictly. Retry."
+            user_content += "\n\nERROR: Do not provide a direct answer. Follow guided learning constraints strictly. Retry."
             
-        res = await self.client.messages.create(
-            model="claude-3-haiku-20240307",
+        res = await self.client.chat.completions.create(
+            model=self.model,
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_content}
+            ],
             max_tokens=2000,
-            system=system_prompt,
-            messages=[{"role": "user", "content": user_content}],
         )
         
-        reply = res.content[0].text
+        reply = res.choices[0].message.content
+        if not reply:
+             raise AIServiceError("Empty response from AI")
         
         if contains_violation(reply):
             if is_retry:

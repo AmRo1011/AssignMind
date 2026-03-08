@@ -31,10 +31,10 @@ class Settings(BaseSettings):
     supabase_jwt_secret: str
 
     # ── AI (Constitution §IV — service layer only) ──
-    anthropic_api_key: str
-    anthropic_model: str = "claude-sonnet-4-20250514"
-    anthropic_max_tokens: int = 4096
-    anthropic_timeout_seconds: int = 60
+    openrouter_api_key: str
+    openrouter_model: str = "anthropic/claude-3-haiku"
+    openrouter_max_tokens: int = 4096
+    openrouter_timeout_seconds: int = 60
 
     # ── Email ──
     resend_api_key: str

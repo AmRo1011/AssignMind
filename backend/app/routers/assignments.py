@@ -23,7 +23,7 @@ router = APIRouter(prefix="/api/workspaces/{workspace_id}/assignments", tags=["a
 
 def get_ai_service(settings: Settings = Depends(get_settings)) -> AIService:
     """Dependency for injecting AI Service."""
-    return AIService(api_key=settings.anthropic_api_key)
+    return AIService(api_key=settings.openrouter_api_key)
 
 
 @router.post("", response_model=AssignmentResponse, status_code=status.HTTP_201_CREATED)

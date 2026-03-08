@@ -24,7 +24,7 @@ from app.services.ai_service import AIService, AIServiceError
 router = APIRouter(prefix="/api/workspaces/{workspace_id}/tasks", tags=["tasks"])
 
 def get_ai_service(settings: Settings = Depends(get_settings)) -> AIService:
-    return AIService(api_key=settings.anthropic_api_key)
+    return AIService(api_key=settings.openrouter_api_key)
 
 @router.post("/distribute", response_model=list[GeneratedTaskResponse])
 async def distribute_tasks(
