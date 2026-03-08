@@ -15,9 +15,8 @@ from app.database import get_db
 from app.config import get_settings
 from app.models.payment_transaction import PaymentTransaction
 from app.models.user import User
-from app.services import email_service
-from app.services import credit_service
-from app.utils.rate_limit import rate_limiter
+from app.services import email_service, credit_service
+from app.utils.rate_limit import rate_limiter, RateLimitExceeded
 
 logger = structlog.get_logger()
 settings = get_settings()
@@ -41,12 +40,18 @@ async def _handle_order_refunded(db, user_id, amount, order_id, var_id, attrs, p
     ))
 
 @router.post("/lemon-squeezy", status_code=status.HTTP_200_OK)
-@rate_limiter(limit=100, window=60)
 async def lemon_squeezy_webhook(
     request: Request,
     background_tasks: BackgroundTasks,
     db: AsyncSession = Depends(get_db)
 ) -> dict:
+    
+    try:
+        client_ip = request.client.host if request.client else "0.0.0.0"
+        rate_limiter.check(client_ip, "lemon_squeezy_webhook", max_calls=100, window_seconds=60)
+    except RateLimitExceeded:
+        raise HTTPException(status_code=429, detail="Too many webhook requests")
+
     signature: str = request.headers.get("X-Signature", "")
     body = await request.body()
     mac = hmac.new(settings.lemon_squeezy_webhook_secret.encode(), body, hashlib.sha256).hexdigest()
