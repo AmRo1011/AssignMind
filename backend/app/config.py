@@ -5,6 +5,8 @@ Loads all environment variables via Pydantic Settings.
 All secrets are server-side only (Constitution §II).
 """
 
+from typing import Any
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -29,6 +31,14 @@ class Settings(BaseSettings):
     supabase_url: str
     supabase_service_role_key: str
     supabase_jwt_secret: str
+
+    @field_validator("database_url", mode="before")
+    @classmethod
+    def fix_database_url_scheme(cls, v: Any) -> Any:
+        """Ensure DATABASE_URL uses postgresql+asyncpg:// for async compatibility."""
+        if isinstance(v, str) and v.startswith("postgresql://"):
+            return v.replace("postgresql://", "postgresql+asyncpg://", 1)
+        return v
 
     # ── AI (Constitution §IV — service layer only) ──
     openrouter_api_key: str
