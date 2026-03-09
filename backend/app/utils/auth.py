@@ -58,7 +58,7 @@ def decode_jwt(token: str) -> TokenPayload:
                 options={"require": ["sub", "exp"]},
             )
         else:
-            jwks_url = f"{settings.supabase_url.rstrip('/')}/auth/v1/jwk"
+            jwks_url = f"{settings.supabase_url.rstrip('/')}/auth/v1/jwks"
             jwks_client = jwt.PyJWKClient(
                 jwks_url,
                 headers={"apikey": settings.supabase_service_role_key}
