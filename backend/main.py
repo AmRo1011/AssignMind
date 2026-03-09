@@ -119,7 +119,7 @@ def _add_cors(application: FastAPI) -> None:
         allow_origins=settings.cors_origins + ["https://assignmind.pages.dev"],
         allow_credentials=True,
         allow_methods=["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
-        allow_headers=["Authorization", "Content-Type"],
+        allow_headers=["*"],
     )
 
 
@@ -144,6 +144,9 @@ def _add_routes(application: FastAPI) -> None:
     application.include_router(chat_router)
     application.include_router(webhooks_router)
     application.include_router(credits_router)
+
+    from app.routers.auth import auth_callback
+    application.post("/auth/callback", tags=["auth"])(auth_callback)
 
     application.get(
         "/api/health",
