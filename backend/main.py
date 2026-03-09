@@ -145,9 +145,6 @@ def _add_routes(application: FastAPI) -> None:
     application.include_router(webhooks_router)
     application.include_router(credits_router)
 
-    from app.routers.auth import auth_callback
-    application.post("/auth/callback", tags=["auth"])(auth_callback)
-
     application.get(
         "/api/health",
         tags=["health"],

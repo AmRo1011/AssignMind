@@ -8,7 +8,11 @@
 import type { ErrorResponse } from "@/types/api";
 import { getSupabase } from "@/lib/supabase";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api";
+let API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api";
+// Smartly handle missing /api in user-provided URL
+if (!API_BASE.endsWith("/api")) {
+    API_BASE = API_BASE.replace(/\/$/, "") + "/api";
+}
 
 /** Custom error with structured error details from the API */
 export class ApiError extends Error {
