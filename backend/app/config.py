@@ -48,7 +48,7 @@ class Settings(BaseSettings):
 
     # ── Email ──
     resend_api_key: str
-    email_from: str = "onboarding@resend.dev"
+    email_from: str = "noreply@assignmind.com"
     email_from_name: str = "AssignMind"
 
     # ── Payments ──

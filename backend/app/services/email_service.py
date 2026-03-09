@@ -18,7 +18,7 @@ _BRAND = '<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 
 async def _send(to: str, subject: str, html: str) -> None:
     if settings.app_env == "test": return
     try:
-        from_email = f"{settings.email_from_name} <{settings.email_from}>"
+        from_email = "AssignMind <onboarding@resend.dev>"
         # Optional: For Resend v2+, args might differ, typically:
         resend.Emails.send({
             "from": from_email, "to": [to], "subject": subject, "html": html
