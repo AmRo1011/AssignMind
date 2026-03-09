@@ -58,17 +58,17 @@ def decode_jwt(token: str) -> TokenPayload:
                 options={"require": ["sub", "exp"]},
             )
         else:
-            jwks_url = f"{settings.supabase_url.rstrip('/')}/auth/v1/jwks"
-            jwks_client = jwt.PyJWKClient(
-                jwks_url,
-                headers={"apikey": settings.supabase_service_role_key}
-            )
+            jwks_url = f"{settings.supabase_url.rstrip('/')}/auth/v1/.well-known/jwks.json"
+            jwks_client = jwt.PyJWKClient(jwks_url)
             signing_key = jwks_client.get_signing_key_from_jwt(token)
             payload = jwt.decode(
                 token,
                 signing_key.key,
                 algorithms=[alg],
-                options={"require": ["sub", "exp"]},
+                options={
+                    "require": ["sub", "exp"],
+                    "verify_aud": False
+                },
             )
 
     except jwt.ExpiredSignatureError:
