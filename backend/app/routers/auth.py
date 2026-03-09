@@ -74,11 +74,21 @@ async def verify_phone(
     """
     Verify phone number with OTP.
 
-    OTP validation is handled by Supabase client-side.
+    OTP validation is handled via Twilio (backend).
     This endpoint records the verified phone, checks uniqueness,
     and grants 30 free credits on first verification.
     """
     phone = sanitize_and_trim(body.phone, max_length=20)
+
+    from app.services import twilio_service
+    if not twilio_service.verify_otp(phone, body.otp):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={
+                "code": "invalid_otp",
+                "message": "Invalid or expired OTP code.",
+            },
+        )
 
     is_unique = await user_service.check_phone_unique(
         db, phone, exclude_user_id=current_user.id
@@ -112,7 +122,7 @@ async def resend_otp(
     """
     Request OTP resend. Rate-limited to 3 per 10 minutes per phone.
 
-    Actual OTP sending is handled by Supabase client-side.
+    OTP is sent via Twilio Programmable SMS.
     This endpoint enforces server-side rate limiting.
     """
     phone = sanitize_and_trim(body.phone, max_length=20)
@@ -130,7 +140,19 @@ async def resend_otp(
             },
         )
 
-    return {"message": "OTP resend permitted"}
+    try:
+        from app.services import twilio_service
+        twilio_service.send_otp(phone)
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={
+                "code": "twilio_error",
+                "message": str(e),
+            },
+        )
+
+    return {"message": "OTP sent successfully"}
 
 
 @router.get(

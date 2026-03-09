@@ -62,6 +62,11 @@ class Settings(BaseSettings):
     # ── Rate Limiting ──
     rate_limit_redis_url: str = ""
 
+    # ── Twilio (SMS Verification) ──
+    twilio_account_sid: str = ""
+    twilio_auth_token: str = ""
+    twilio_messaging_service_sid: str = "MG80069924902d3b1561b877792c189440"
+
     # ── Logging ──
     log_level: str = "INFO"
     log_format: str = "json"
