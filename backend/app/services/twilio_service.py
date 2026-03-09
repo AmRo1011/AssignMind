@@ -64,7 +64,7 @@ def send_otp(phone: str) -> None:
             phone=phone,
             error=str(exc),
         )
-        raise ValueError("Failed to send SMS via Twilio.") from exc
+        raise ValueError(f"Twilio error: {exc.msg}") from exc
 
 
 def verify_otp(phone: str, provided_otp: str) -> bool:
