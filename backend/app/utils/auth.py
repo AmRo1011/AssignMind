@@ -37,7 +37,7 @@ def decode_jwt(token: str) -> TokenPayload:
     Decode and validate a Supabase JWT.
 
     Verifies:
-      - Signature using SUPABASE_JWT_SECRET
+      - Signature using SUPABASE_JWT_SECRET (for HS256) or JWKS (for ES256/RS256)
       - Expiration (exp claim)
       - Presence of sub claim
 
@@ -47,15 +47,33 @@ def decode_jwt(token: str) -> TokenPayload:
     settings = get_settings()
 
     try:
-        payload = jwt.decode(
-            token,
-            settings.supabase_jwt_secret,
-            algorithms=["HS256"],
-            options={"require": ["sub", "exp"]},
-        )
+        header = jwt.get_unverified_header(token)
+        alg = header.get("alg", "HS256")
+
+        if alg == "HS256":
+            payload = jwt.decode(
+                token,
+                settings.supabase_jwt_secret,
+                algorithms=["HS256"],
+                options={"require": ["sub", "exp"]},
+            )
+        else:
+            jwks_url = f"{settings.supabase_url.rstrip('/')}/auth/v1/jwk"
+            jwks_client = jwt.PyJWKClient(
+                jwks_url,
+                headers={"apikey": settings.supabase_service_role_key}
+            )
+            signing_key = jwks_client.get_signing_key_from_jwt(token)
+            payload = jwt.decode(
+                token,
+                signing_key.key,
+                algorithms=[alg],
+                options={"require": ["sub", "exp"]},
+            )
+
     except jwt.ExpiredSignatureError:
         raise AuthError("Token has expired")
-    except jwt.InvalidTokenError as exc:
+    except Exception as exc:
         raise AuthError(f"Invalid token: {exc}")
 
     return TokenPayload(**payload)
