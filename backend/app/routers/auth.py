@@ -144,16 +144,36 @@ async def resend_otp(
     try:
         from app.services import twilio_service
         await twilio_service.send_otp(db, current_user, phone)
-    except ValueError as e:
+    except Exception as e:
+        import traceback
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail={
                 "code": "twilio_error",
                 "message": str(e),
+                "traceback": traceback.format_exc(),
             },
         )
 
     return {"message": "OTP sent successfully"}
+
+
+@router.get("/test-twilio")
+def test_twilio_debug(phone: str):
+    import traceback
+    from twilio.rest import Client
+    from app.config import get_settings
+    settings = get_settings()
+    try:
+        client = Client(settings.twilio_account_sid, settings.twilio_auth_token)
+        message = client.messages.create(
+            messaging_service_sid=settings.twilio_messaging_service_sid,
+            body="Your AssignMind verification code is: 123456",
+            to=phone,
+        )
+        return {"sid": message.sid, "status": message.status}
+    except Exception as e:
+        return {"error_type": type(e).__name__, "message": str(e), "traceback": traceback.format_exc()}
 
 
 @router.get(
