@@ -81,7 +81,7 @@ async def verify_phone(
     phone = sanitize_and_trim(body.phone, max_length=20)
 
     from app.services import twilio_service
-    if not await twilio_service.verify_otp(db, current_user, phone, body.otp):
+    if not await twilio_service.verify_otp(phone, body.otp):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail={
@@ -147,15 +147,13 @@ async def resend_otp(
 
     try:
         from app.services import twilio_service
-        await twilio_service.send_otp(db, current_user, phone)
+        await twilio_service.send_otp(phone)
     except Exception as e:
-        import traceback
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail={
                 "code": "twilio_error",
                 "message": str(e),
-                "traceback": traceback.format_exc(),
             },
         )
 

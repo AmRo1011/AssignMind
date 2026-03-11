@@ -1,94 +1,109 @@
 """
-AssignMind — Twilio SMS Service
+AssignMind — Twilio Verify Service
 
-Handles sending and verifying OTP codes using Twilio Programmable SMS
-and the Messaging Service SID.
+Handles sending and verifying OTP codes using Twilio Verify API.
+Twilio Verify manages OTP generation, delivery, and expiry automatically —
+no OTP storage in the application database is required.
 """
 
-import random
-from datetime import datetime, timedelta, timezone
-
 import structlog
-from sqlalchemy.ext.asyncio import AsyncSession
 from twilio.rest import Client
 from twilio.base.exceptions import TwilioRestException
 
 from app.config import get_settings
-from app.models.user import User
 
 logger = structlog.get_logger()
 settings = get_settings()
 
 
-async def send_otp(db: AsyncSession, user: User, phone: str) -> None:
-    """Generate and send a 6-digit OTP to the phone number."""
-    # Always allow 123456 as a test OTP in non-production, but we still generate one.
-    otp_code = "".join(random.choices("0123456789", k=6))
-    logger.info("otp_generated", otp_code=otp_code)
-    
-    user.otp_code = otp_code
-    user.otp_expires_at = datetime.now(timezone.utc) + timedelta(minutes=10)
-    
-    try:
-        await db.commit()
-        logger.info("otp_saved_to_db", status="success")
-    except Exception as exc:
-        logger.error("otp_saved_to_db", status="failure", error=str(exc))
-        raise
+def _get_twilio_client() -> Client:
+    """Instantiate and return a Twilio REST client."""
+    return Client(settings.twilio_account_sid, settings.twilio_auth_token)
 
-    # For testing without sending real SMS
+
+async def send_otp(phone: str) -> None:
+    """
+    Trigger a Twilio Verify OTP delivery to the given phone number.
+
+    Twilio Verify handles code generation, SMS delivery, and expiry.
+    No OTP is stored in the application database.
+    """
     if not settings.twilio_account_sid or not settings.twilio_auth_token:
         logger.warning(
             "twilio_credentials_missing",
-            msg="Simulating OTP SMS. Twilio not configured.",
+            msg="Simulating OTP send. Twilio not configured.",
             phone=phone,
-            code=otp_code,
+        )
+        return
+
+    if not settings.twilio_verify_service_sid:
+        logger.warning(
+            "twilio_verify_sid_missing",
+            msg="TWILIO_VERIFY_SERVICE_SID not configured.",
+            phone=phone,
         )
         return
 
     try:
-        client = Client(settings.twilio_account_sid, settings.twilio_auth_token)
-        message = client.messages.create(
-            messaging_service_sid=settings.twilio_messaging_service_sid,
-            body=f"Your AssignMind verification code is: {otp_code}",
-            to=phone,
-        )
+        client = _get_twilio_client()
+        verification = client.verify.v2.services(
+            settings.twilio_verify_service_sid
+        ).verifications.create(to=phone, channel="sms")
         logger.info(
-            "twilio_api_called",
-            status="success",
+            "twilio_verify_send",
+            status=verification.status,
             phone=phone,
-            message_sid=message.sid,
-            message_status=message.status,
+            sid=verification.sid,
         )
     except TwilioRestException as exc:
         logger.error(
-            "twilio_api_called",
-            status="failure",
+            "twilio_verify_send_failed",
             phone=phone,
             error=str(exc),
         )
-        raise ValueError(f"Twilio error: {exc.msg}") from exc
+        raise ValueError(f"Twilio Verify error: {exc.msg}") from exc
 
 
-async def verify_otp(db: AsyncSession, user: User, phone: str, provided_otp: str) -> bool:
-    """Verify the provided OTP for the given phone number."""
-    # Allow test code 123456 in development only, if needed. Wait, we'll just check store.
-    if not settings.is_production and provided_otp == "123456":
-        return True
+async def verify_otp(phone: str, otp_code: str) -> bool:
+    """
+    Check the provided OTP code via Twilio Verify.
 
-    if not user.otp_code or not user.otp_expires_at:
+    Returns True if the code is approved, False otherwise.
+    Twilio Verify handles expiry and attempt-limit enforcement automatically.
+    """
+    if not settings.twilio_account_sid or not settings.twilio_auth_token:
+        logger.warning(
+            "twilio_credentials_missing",
+            msg="Twilio not configured — rejecting OTP in production guard.",
+            phone=phone,
+        )
         return False
 
-    if datetime.now(timezone.utc) > user.otp_expires_at:
-        user.otp_code = None
-        user.otp_expires_at = None
-        await db.commit()
+    if not settings.twilio_verify_service_sid:
+        logger.warning(
+            "twilio_verify_sid_missing",
+            msg="TWILIO_VERIFY_SERVICE_SID not configured.",
+            phone=phone,
+        )
         return False
 
-    if user.otp_code == provided_otp:
-        user.otp_code = None
-        user.otp_expires_at = None
-        await db.commit()
-        return True
-
-    return False
+    try:
+        client = _get_twilio_client()
+        result = client.verify.v2.services(
+            settings.twilio_verify_service_sid
+        ).verification_checks.create(to=phone, code=otp_code)
+        approved = result.status == "approved"
+        logger.info(
+            "twilio_verify_check",
+            status=result.status,
+            approved=approved,
+            phone=phone,
+        )
+        return approved
+    except TwilioRestException as exc:
+        logger.error(
+            "twilio_verify_check_failed",
+            phone=phone,
+            error=str(exc),
+        )
+        raise ValueError(f"Twilio Verify check error: {exc.msg}") from exc

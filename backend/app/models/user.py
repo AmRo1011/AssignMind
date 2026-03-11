@@ -45,10 +45,6 @@ class User(Base):
     timezone: Mapped[str] = mapped_column(
         String(50), default="UTC"
     )
-    otp_code: Mapped[str | None] = mapped_column(String(6), default=None)
-    otp_expires_at: Mapped[datetime | None] = mapped_column(
-        DateTime(timezone=True), default=None
-    )
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     deactivated_at: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True), default=None
