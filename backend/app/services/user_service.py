@@ -8,7 +8,7 @@ All database writes use ORM (Constitution §III).
 from uuid import UUID
 
 import structlog
-from sqlalchemy import select
+from sqlalchemy import select, or_
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.user import Credit, User
@@ -34,11 +34,12 @@ async def create_or_update_user(
     clean_name = sanitize_and_trim(full_name, max_length=200)
 
     result = await db.execute(
-        select(User).where(User.supabase_id == supabase_id)
+        select(User).where(or_(User.supabase_id == supabase_id, User.email == email))
     )
     existing = result.scalar_one_or_none()
 
     if existing:
+        existing.supabase_id = supabase_id
         existing.email = email
         existing.full_name = clean_name
         if avatar_url:
