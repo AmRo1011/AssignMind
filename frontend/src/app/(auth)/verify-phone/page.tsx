@@ -80,13 +80,25 @@ function SendOtpForm({ setPhone, onSent }: { setPhone: (v: string) => void; onSe
         e.preventDefault();
         const fullPhone = `${countryCode}${localNumber}`;
         if (!/^\+\d{7,15}$/.test(fullPhone)) return addToast("error", "Invalid E.164 phone");
+        
+        console.log("Constructed phone number:", fullPhone);
+        
         try {
             setIsLoading(true);
-            await apiPost("/auth/resend-otp", { phone: fullPhone });
+            const apiUrl = `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api"}/auth/resend-otp`;
+            console.log("API URL being called:", apiUrl);
+            
+            const responseBody = await apiPost("/auth/resend-otp", { phone: fullPhone });
+            
+            console.log("Response status:", 200);
+            console.log("Response body:", responseBody);
+            
             setPhone(fullPhone);
             addToast("success", "OTP sent! (Use 123456 for testing)");
             onSent();
-        } catch (err) {
+        } catch (err: any) {
+            console.log("Response status:", err.status || "Unknown");
+            console.log("Response body:", { code: err.code, message: err.message, raw: err });
             addToast("error", err instanceof Error ? err.message : "Failed");
         } finally {
             setIsLoading(false);

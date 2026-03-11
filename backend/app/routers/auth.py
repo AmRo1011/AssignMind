@@ -128,6 +128,10 @@ async def resend_otp(
     """
     phone = sanitize_and_trim(body.phone, max_length=20)
 
+    import structlog
+    logger = structlog.get_logger()
+    logger.info("resend_otp_request_received", phone=phone)
+
     try:
         rate_limiter.check(
             phone, "resend_otp", max_calls=3, window_seconds=600
@@ -156,24 +160,6 @@ async def resend_otp(
         )
 
     return {"message": "OTP sent successfully"}
-
-
-@router.get("/test-twilio")
-def test_twilio_debug(phone: str):
-    import traceback
-    from twilio.rest import Client
-    from app.config import get_settings
-    settings = get_settings()
-    try:
-        client = Client(settings.twilio_account_sid, settings.twilio_auth_token)
-        message = client.messages.create(
-            messaging_service_sid=settings.twilio_messaging_service_sid,
-            body="Your AssignMind verification code is: 123456",
-            to=phone,
-        )
-        return {"sid": message.sid, "status": message.status}
-    except Exception as e:
-        return {"error_type": type(e).__name__, "message": str(e), "traceback": traceback.format_exc()}
 
 
 @router.get(

@@ -24,11 +24,17 @@ async def send_otp(db: AsyncSession, user: User, phone: str) -> None:
     """Generate and send a 6-digit OTP to the phone number."""
     # Always allow 123456 as a test OTP in non-production, but we still generate one.
     otp_code = "".join(random.choices("0123456789", k=6))
+    logger.info("otp_generated", otp_code=otp_code)
     
     user.otp_code = otp_code
     user.otp_expires_at = datetime.now(timezone.utc) + timedelta(minutes=10)
     
-    await db.commit()
+    try:
+        await db.commit()
+        logger.info("otp_saved_to_db", status="success")
+    except Exception as exc:
+        logger.error("otp_saved_to_db", status="failure", error=str(exc))
+        raise
 
     # For testing without sending real SMS
     if not settings.twilio_account_sid or not settings.twilio_auth_token:
@@ -48,14 +54,16 @@ async def send_otp(db: AsyncSession, user: User, phone: str) -> None:
             to=phone,
         )
         logger.info(
-            "twilio_sms_sent",
+            "twilio_api_called",
+            status="success",
             phone=phone,
             message_sid=message.sid,
-            status=message.status,
+            message_status=message.status,
         )
     except TwilioRestException as exc:
         logger.error(
-            "twilio_sms_error",
+            "twilio_api_called",
+            status="failure",
             phone=phone,
             error=str(exc),
         )
