@@ -8,7 +8,7 @@ All database writes use ORM (Constitution §III).
 from uuid import UUID
 
 import structlog
-from sqlalchemy import select, or_
+from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.user import Credit, User
@@ -30,23 +30,55 @@ async def create_or_update_user(
     Upsert a user from Supabase OAuth data.
 
     Returns (user, is_new). Sanitizes full_name.
+    Handles race conditions by catching IntegrityError on duplicate insert.
     """
     clean_name = sanitize_and_trim(full_name, max_length=200)
 
+    existing = await _find_user_by_supabase_or_email(db, supabase_id, email)
+    if existing:
+        return await _update_existing_user(db, existing, supabase_id, email, clean_name, avatar_url)
+
+    return await _insert_new_user(db, supabase_id, email, clean_name, avatar_url)
+
+
+async def _find_user_by_supabase_or_email(
+    db: AsyncSession, supabase_id: UUID, email: str
+) -> User | None:
+    """Look up a user by Supabase ID or email."""
     result = await db.execute(
         select(User).where(or_(User.supabase_id == supabase_id, User.email == email))
     )
-    existing = result.scalar_one_or_none()
+    return result.scalar_one_or_none()
 
-    if existing:
-        existing.supabase_id = supabase_id
-        existing.email = email
-        existing.full_name = clean_name
-        if avatar_url:
-            existing.avatar_url = avatar_url
-        await db.commit()
-        await db.refresh(existing)
-        return existing, False
+
+async def _update_existing_user(
+    db: AsyncSession,
+    existing: User,
+    supabase_id: UUID,
+    email: str,
+    clean_name: str,
+    avatar_url: str | None,
+) -> tuple[User, bool]:
+    """Update mutable fields on an existing user row."""
+    existing.supabase_id = supabase_id
+    existing.email = email
+    existing.full_name = clean_name
+    if avatar_url:
+        existing.avatar_url = avatar_url
+    await db.commit()
+    await db.refresh(existing)
+    return existing, False
+
+
+async def _insert_new_user(
+    db: AsyncSession,
+    supabase_id: UUID,
+    email: str,
+    clean_name: str,
+    avatar_url: str | None,
+) -> tuple[User, bool]:
+    """Insert a new User row, guarding against race-condition duplicates."""
+    from sqlalchemy.exc import IntegrityError
 
     user = User(
         supabase_id=supabase_id,
@@ -55,13 +87,20 @@ async def create_or_update_user(
         avatar_url=avatar_url,
     )
     db.add(user)
-    await db.flush()
+    try:
+        await db.flush()
+    except IntegrityError:
+        await db.rollback()
+        existing = await _find_user_by_supabase_or_email(db, supabase_id, email)
+        if existing:
+            logger.warning("user_insert_race_condition_recovered", email=email)
+            return existing, False
+        raise
+
     _init_credits(db, user.id)
     count = await _auto_accept_invites(db, user.id, email)
-
     await db.commit()
     await db.refresh(user)
-    
     logger.info("user_created", id=str(user.id), auto_accepted_invites=count)
     return user, True
 
@@ -101,10 +140,18 @@ async def get_user_by_id(
     return result.scalar_one_or_none()
 
 
+async def get_phone_owner(db: AsyncSession, phone: str) -> User | None:
+    """Return the user who owns the given phone number, or None."""
+    result = await db.execute(
+        select(User).where(User.phone == phone)
+    )
+    return result.scalar_one_or_none()
+
+
 async def check_phone_unique(
     db: AsyncSession, phone: str, exclude_user_id: UUID | None = None
 ) -> bool:
-    """Check if a phone number is not already registered."""
+    """Check if a phone number is not already registered (verified)."""
     query = select(User).where(
         User.phone == phone, User.phone_verified.is_(True)
     )
@@ -193,8 +240,6 @@ async def update_user_profile(
     await db.refresh(user)
     return user
 
-
-from sqlalchemy import func
 
 async def deactivate_user(
     db: AsyncSession,

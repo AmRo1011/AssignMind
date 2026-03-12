@@ -74,9 +74,10 @@ async def verify_phone(
     """
     Verify phone number with OTP.
 
-    OTP validation is handled via Twilio (backend).
-    This endpoint records the verified phone, checks uniqueness,
-    and grants 30 free credits on first verification.
+    OTP validation is handled via Twilio Verify (backend).
+    Allows re-verification of a phone already owned by the same user.
+    Rejects with 409 only when the phone belongs to a different user.
+    Grants 30 free credits on first successful verification.
     """
     phone = sanitize_and_trim(body.phone, max_length=20)
 
@@ -90,23 +91,24 @@ async def verify_phone(
             },
         )
 
-    is_unique = await user_service.check_phone_unique(
-        db, phone, exclude_user_id=current_user.id
-    )
-    if not is_unique:
+    owner = await user_service.get_phone_owner(db, phone)
+    if owner is not None and owner.id != current_user.id:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail={
-                "code": "phone_already_registered",
-                "message": "This phone number is already registered",
+                "code": "phone_already_in_use",
+                "message": "Phone number already in use",
             },
         )
 
-    updated = await user_service.verify_phone(
-        db, current_user, phone
-    )
+    updated = await user_service.verify_phone(db, current_user, phone)
     from app.services import email_service
-    background_tasks.add_task(email_service.send_account_activated, updated.email, updated.full_name, 30)
+    background_tasks.add_task(
+        email_service.send_account_activated,
+        updated.email,
+        updated.full_name,
+        30,
+    )
 
     return UserResponse.model_validate(updated)
 
@@ -123,7 +125,7 @@ async def resend_otp(
     """
     Request OTP resend. Rate-limited to 3 per 10 minutes per phone.
 
-    OTP is sent via Twilio Programmable SMS.
+    OTP is sent via Twilio Verify API.
     This endpoint enforces server-side rate limiting.
     """
     phone = sanitize_and_trim(body.phone, max_length=20)
