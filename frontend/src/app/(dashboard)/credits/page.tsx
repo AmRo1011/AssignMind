@@ -23,10 +23,10 @@ export default function CreditsPage() {
             setLoading(true);
             setError(null);
 
-            const userRes = await apiGet<UserWithCredits>("/api/credits/balance");
+            const userRes = await apiGet<UserWithCredits>("/credits/balance");
             setUser(userRes);
 
-            const txRes = await apiGet<CreditTransaction[]>("/api/credits/transactions?limit=20&offset=0");
+            const txRes = await apiGet<CreditTransaction[]>("/credits/transactions?limit=20&offset=0");
             setTransactions(txRes);
         } catch (err: any) {
             setError(err.message || "Failed to load credits data");
@@ -39,7 +39,7 @@ export default function CreditsPage() {
         try {
             setBuying(packageType);
             setError(null);
-            const urlRes = await apiPost<CheckoutUrl>(`/api/credits/checkout/${packageType}`, {});
+            const urlRes = await apiPost<CheckoutUrl>(`/credits/checkout/${packageType}`, {});
             window.location.href = urlRes.checkout_url;
         } catch (err: any) {
             setError(err.message || "Failed to initialize checkout.");
