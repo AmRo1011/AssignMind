@@ -48,6 +48,7 @@ async def list_active_workspaces(
     """Retrieve all non-archived workspaces the user is a member of."""
     stmt = (
         select(Workspace)
+        .options(selectinload(Workspace.members).selectinload(WorkspaceMember.user))
         .join(WorkspaceMember, Workspace.id == WorkspaceMember.workspace_id)
         .where(
             WorkspaceMember.user_id == user_id,
