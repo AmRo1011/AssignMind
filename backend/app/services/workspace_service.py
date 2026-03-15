@@ -38,9 +38,15 @@ async def create_workspace(
     )
     db.add(member)
     await db.commit()
-    await db.refresh(workspace)
     
-    return workspace
+    # Re-fetch with members eagerly loaded to prevent MissingGreenlet in serializations
+    full_workspace = await get_workspace_with_details(db, workspace.id)
+    if not full_workspace:
+        # Fallback if refresh/re-fetch fails, though shouldn't happen
+        await db.refresh(workspace)
+        return workspace
+        
+    return full_workspace
 
 async def list_active_workspaces(
     db: AsyncSession, user_id: UUID
@@ -83,8 +89,10 @@ async def update_workspace(
         workspace.deadline = data.deadline
         
     await db.commit()
-    await db.refresh(workspace)
-    return workspace
+    
+    # Re-fetch with details
+    full_workspace = await get_workspace_with_details(db, workspace.id)
+    return full_workspace or workspace
 
 async def archive_workspace(
     db: AsyncSession, workspace: Workspace
@@ -97,8 +105,10 @@ async def archive_workspace(
     await cancel_workspace_emails(db, workspace.id)
     
     await db.commit()
-    await db.refresh(workspace)
-    return workspace
+    
+    # Re-fetch with details
+    full_workspace = await get_workspace_with_details(db, workspace.id)
+    return full_workspace or workspace
 
 async def transfer_leadership(
     db: AsyncSession, workspace_id: UUID, current_leader_id: UUID, new_leader_id: UUID
